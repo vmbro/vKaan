@@ -8,6 +8,7 @@
 - Admission Control
 - VM Monitoring
 - VM Restart Priority
+- Heartbeat Datastore Policy
 
 ## Cluster DRS
 
@@ -15,9 +16,22 @@
 - Enabled/Disabled
 - Migration Threshold
 - VM Override
-- DRS Faults (Aria Operations Alert)
+- Proactive DRS Enabled
+- DRS Score
+- DRS Scalable Shares
+- DPM Enabled
+- DPM Automation Level
 
-## Other Properties
+## Cluster Other 
+- Overall Status
+- Number of Host
+- Number of Effective Host
+- Total vMotions
+- vSAN Enabled
+- vSAN ESA Enabled
+- VM Swap File Location
+
+## Mandatory Properties
 
 - Cluster moId
 - Datacenter moId
