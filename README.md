@@ -32,11 +32,13 @@ vKaan - vSphere Health Check is a management pack solution for maintaining the c
 
 ## Screenshots
 
-![image](https://github.com/vmbro/vKaan/assets/6716206/68d7e5ce-65e9-49e0-960b-898358c93659)
+![image](https://github.com/vmbro/vKaan/assets/6716206/6f3c9dab-4b7b-4e76-8b9d-3f8a1a2515d7)
 
-![image](https://github.com/vmbro/vKaan/assets/6716206/f7796875-6a2b-4d81-a9e5-565145c3624a)
+![image](https://github.com/vmbro/vKaan/assets/6716206/43e46d82-77c2-4027-9fce-84e52611a7e8)
 
 ![image](https://github.com/vmbro/vKaan/assets/6716206/3f635409-7b22-40b0-9cc0-b94fa6f85282)
+
+![image](https://github.com/vmbro/vKaan/assets/6716206/c7ca66fb-884e-4d14-9172-feafa1a5ab9d)
 
 
 ## License
