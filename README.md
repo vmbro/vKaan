@@ -1,6 +1,6 @@
 # vKaan - vSphere Health Check - Aria Operations Management Pack 
 
-vKaan - vSphere Health Check is a management pack solution for maintaining the configurations of your vSphere environments. This package vKaan allows you to monitor Cluster HA and DRS configurations and identify non-identical objects. It also detects vSphere DRS rule violations and generates alerts. By identifying rule violations it helps ensure that your vSphere environment remains stable, efficient and compliant for your desired state. You can find the original post here: [Broadcom Developer Portal](https://community.broadcom.com/developer-portal/viewdocument/vkaan-vsphere-health-check-aria?CommunityKey=d743a854-b7b6-437f-9698-4dd8983b11cf&tab=librarydocuments)
+vKaan - is an Aria Operations management pack for maintaining the configurations of your vSphere environments. This package vKaan allows you to monitor Cluster HA and DRS configurations and identify non-identical objects. It also detects vSphere DRS rule violations and generates alerts. By identifying rule violations it helps ensure that your vSphere environment remains stable, efficient and compliant for your desired state. You can find the original post here: [Broadcom Developer Portal](https://community.broadcom.com/developer-portal/viewdocument/vkaan-vsphere-health-check-aria?CommunityKey=d743a854-b7b6-437f-9698-4dd8983b11cf&tab=librarydocuments)
 
 ![image](https://github.com/vmbro/vKaan/assets/6716206/34f4dd01-0fb7-4767-896e-6c4385336d9d)
 
