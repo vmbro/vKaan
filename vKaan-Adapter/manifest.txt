@@ -1,0 +1,32 @@
+{
+    "display_name": "DISPLAY_NAME",
+    "name": "iSDK_vKaan",
+    "description": "DESCRIPTION",
+    "version": "0.1.0",
+    "vcops_minimum_version": "8.10.0",
+    "disk_space_required": 500,
+    "run_scripts_on_all_nodes": "true",
+    "eula_file": "eula.txt",
+    "platform": [
+        "Linux Non-VA",
+        "Linux VA"
+    ],
+    "vendor": "VENDOR",
+    "pak_icon": "vKaan-Icon.png",
+    "pak_validation_script": {
+        "script": ""
+    },
+    "adapter_pre_script": {
+        "script": ""
+    },
+    "adapter_post_script": {
+        "script": ""
+    },
+    "adapters": [
+        "adapter.zip"
+    ],
+    "adapter_kinds": [
+        "vKaan"
+    ],
+    "license_type": ""
+}

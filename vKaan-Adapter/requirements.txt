@@ -1,0 +1,1 @@
+vmware-aria-operations-integration-sdk==1.1.0
