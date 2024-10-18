@@ -40,13 +40,16 @@ def get_adapter_definition() -> AdapterDefinition:
             constants.PORT_IDENTIFIER, "Port", default=443, advanced=True
         )
 
+        # Define the credential definitions below. Use of credentials can be customised
         credential = definition.define_credential_type("vsphere_user", "Credential")
         credential.define_string_parameter(constants.USER_CREDENTIAL, "User Name")
         credential.define_password_parameter(constants.PASSWORD_CREDENTIAL, "Password")
 
+        # Define the object types
         CCR = definition.define_object_type("Cluster Compute Resource")
         clusterConfiguration = CCR.define_group("Cluster Configuration")
 
+        # Define the metrics and properties below for object types
         vSphereHA = clusterConfiguration.define_group("vSphere HA")
         vSphereHA.define_string_property("Host Monitoring")
         vSphereHA.define_string_property("Response \\\\ Host Isolation")

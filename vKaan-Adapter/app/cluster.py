@@ -24,6 +24,7 @@ def add_cluster_metrics(
         container, view_type, recursive
     )
 
+    # Retrieve object types from the Aria Operations
     clusters: List[Object] = suite_api_client.query_for_resources(
         {
             "adapterKind": [VCENTER_ADAPTER_KIND],
@@ -32,10 +33,12 @@ def add_cluster_metrics(
         }
     )
 
+    # Match the Aria Operations objects with the related identifier
     clusters_by_uuid: dict[str, Object] = {
         cluster.get_identifier_value("VMEntityObjectID"): cluster for cluster in clusters
     }
 
+    # Push your metrics below
     children = container_view.view
     for cluster in children:
         cluster_obj = clusters_by_uuid.get(cluster._moId)
