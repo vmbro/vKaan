@@ -1,0 +1,5 @@
+## EULA - vKaan Management Pack ##
+
+vKaan is an open-source management pack for Aria Operations. Feel free to use and explore it in your environment! Dive in, experiment, and have fun with it—your feedback helps us improve.
+
+Enjoy! (:

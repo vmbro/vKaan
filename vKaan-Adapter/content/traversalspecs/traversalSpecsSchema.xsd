@@ -1,0 +1,185 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"  version="8.3.0">
+    <xs:element name="AdapterKind">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="TraversalSpecKinds">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">A Collection of TraversalSpecKind elements.</xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="TraversalSpecKind" maxOccurs="unbounded" minOccurs="1">
+                                <xs:complexType mixed="true">
+                                    <xs:annotation>
+                                        <xs:documentation xml:lang="en">Defines a complete Traversal Spec Kind.</xs:documentation>
+                                    </xs:annotation>
+                                    <xs:sequence>
+                                        <xs:element name="ResourcePath" type="ResourcePathType" maxOccurs="unbounded" minOccurs="1" />
+                                    </xs:sequence>
+                                    <xs:attribute type="xs:string" name="name" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Identifies the TraversalSpecKind.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attributeGroup ref="OptionalNameKeyGroup" />
+                                    <xs:attribute name="filterType" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">Denotes the logic that will be applied to evaluate the traversal specs.
+                                                (e.g. GENERIC_RELATION and ADAPTER_ASSOCIATION). Default is GENERIC_RELATION.
+                                                The ADAPTER_ASSOCIATION is a specific case for VMware internal use only.</xs:documentation>
+                                        </xs:annotation>
+                                        <xs:simpleType>
+                                            <xs:restriction base="xs:string">
+                                                <xs:enumeration value="ADAPTER_ASSOCIATION" />
+                                                <xs:enumeration value="GENERIC_RELATION" />
+                                            </xs:restriction>
+                                        </xs:simpleType>
+                                    </xs:attribute>
+                                    <xs:attribute type="xs:string" name="rootAdapterKind" use="required">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">AdapterKind of the root node of the tree created based on this Traversal Spec.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute type="xs:string" name="rootResourceKind" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">ResourceKind of the root node of the tree created based on this Traversal Spec.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute type="xs:string" name="description" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">A brief description of the traversal tree.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute type="xs:string" name="usedFor" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">It is possible to specify an optional attribute called "usedFor" in TraversalSpecKind to specify
+                                                what purpose the traversal spec will be used for.
+                                                The values specified in this attribute should be separated by "|" character.
+                                                The values specified should also match the enum names in com.integrien.alive.common.util.TraversalSpecUseType
+                                                as shown below:
+                                                NAV("For UI navigation")
+                                                AUTH("For use in assign permissions on object tree")
+                                                GROUP("For use in creating custom groups")
+                                                DASHBOARD("For use in creating dashboards")
+                                                VIEWS("For use in creating views")
+                                                INTERNAL("For VMware internal use only, does not show up in UI")
+                                                ALL("For all purposes")
+                                                If this value is not specified or if it is specified as "ALL", then the traversal spec will be treated
+                                                as applicable for all the use cases.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                    <xs:attribute type="xs:string" name="iconName" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation xml:lang="en">The name of the icon image file to be displayed in UI fro this traversal spec.
+                                                The file should be located in the "TraversalSpec" sub folder under adapter's conf/images folder.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="key" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Adapter kind key. A unique string that identifies the adapter.
+                        Only one adapter with specified key can be present in the product.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="version" type="xs:integer" use="required">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Version number of the adapter. Versions are used by the describe mechanism to determine
+                        if Describe Upgrade is required. If the version in the database is lower than the version
+                        returned by the adapter describe the database will be updated according to the latest version.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="handleMultiCollection" type="xs:boolean" use="optional" default="false">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="TraversalSpecExtensionKindsType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">A Collection of TraversalSpecExtensionKind elements.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="TraversalSpecExtensionKind" type="TraversalSpecExtensionKindType" maxOccurs="unbounded" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="TraversalSpecExtensionKindType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Defines a Traversal Spec Extension Kind.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="ResourcePath" type="ResourcePathType" maxOccurs="unbounded" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="name" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Identifies the TraversalSpecExtensionKind. It has to be unique in a describe.xml</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="description" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">A brief description of the traversal tree extension.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="parentAdapterKind" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">AdapterKind of the adapter where the parent traversal spec or an extension is defined.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="parentTraversalSpecName" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The name of the parent traversal spec.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:boolean" name="isParentAnExtension" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">This flag is to indicate if the current TraversalSpecExtensionKind is extending a TraversalSpecKind
+                    or another TraversalSpecExtensionKind.
+                    Default is false.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ResourcePathType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Path of resources.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute type="xs:string" name="path" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Resource path to traverse starting from resources of type rootResourceKind and rootAdapterKind</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="targetResourceKinds" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">An optional parameter that indicates the resources that will be selected
+                    when traversing resource paths.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:integer" name="maxPropogationLevelOfWildCard" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Indicates how many levels in the graph the wild card applies to starting from the position
+                    of the wild card.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="joinPointInParentPath" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The presence of this attribute identifies that the current path is a relative path.
+                    The value of this attribute should be the in the format of $adapterKind::$resourceKind.
+                    The $adapterKind and $resourceKind correspond to the attributes of the element in the parent traversal spec's paths,
+                    to which we need to append the defined path in the ResourcePath element.
+                    If the attribute is missing then the current path is an absolute path.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:attributeGroup name="OptionalNameKeyGroup">
+        <xs:attribute name="nameKey" type="xs:integer" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Localized name id for the adapter.
+                    The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+</xs:schema>

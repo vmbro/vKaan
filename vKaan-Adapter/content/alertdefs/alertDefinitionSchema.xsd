@@ -1,0 +1,660 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"  version="8.3.0">
+    <xs:element name="alertContent">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="AlertDefinitions" type="AlertDefinitionsType" minOccurs="0">
+                    <xs:unique name="unique">
+                        <xs:selector xpath="AlertDefinition"/>
+                        <xs:field xpath="@id"/>
+                    </xs:unique>
+                </xs:element>
+                <xs:element name="SymptomDefinitions" type="SymptomDefinitionsType" minOccurs="0"/>
+                <xs:element name="Recommendations" type="RecommendationsType" minOccurs="0"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="AlertDefinitionsType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Collection of AlertDefinition elements.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="AlertDefinition" type="AlertDefinitionType" maxOccurs="unbounded" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute type="xs:boolean" name="forceUpdate" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">For VMware internal use only.
+                    If true it would force the update to the existing AlertDefintions, SymptomDefinitions and Recommendation.
+                    It is recommended to set to false and let the user make the choice for update from the product user interface.
+                    Default is false.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="AlertDefinitionType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">An Alert Definition is a rule to define the condition under which an alert should be
+                triggered on an object and includes a list of Recommendations to resolve the alert.
+                The rule is built as an expression containing Symptom Definition references</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="State" maxOccurs="1" minOccurs="1">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">Defines an expression based on Symptom Definition references to specify the trigger
+                            condition for alert, the severity of the alert and its impact on the badges, and Recommendations
+                            to resolve the alert.</xs:documentation>
+                    </xs:annotation>
+                    <xs:all>
+                        <xs:element name="SymptomSets" type="symptomsetsType" maxOccurs="1" minOccurs="0" />
+                        <xs:element name="SymptomSet" type="symptomsetType" maxOccurs="1" minOccurs="0" />
+                        <xs:element name="Impact" type="impactType" maxOccurs="1" minOccurs="1" />
+                        <xs:element name="Recommendations" type="recommendationsType" maxOccurs="1" minOccurs="0" />
+                    </xs:all>
+                    <xs:attribute name="severity" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">The severity (criticality) level of the entire state.
+                                Supported Values: automatic, info, warning, immediate, critical.</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="automatic" />
+                                <xs:enumeration value="Automatic" />
+                                <xs:enumeration value="info" />
+                                <xs:enumeration value="Info" />
+                                <xs:enumeration value="warning" />
+                                <xs:enumeration value="Warning" />
+                                <xs:enumeration value="immediate" />
+                                <xs:enumeration value="Immediate" />
+                                <xs:enumeration value="critical" />
+                                <xs:enumeration value="Critical" />
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="id" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Unique id of the AlertDefinition for this adapter.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="name" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The name of the Alert Definition. Will also be the name of the
+                    alert that is triggered based on this definition.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="description" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">A brief description of the nature of the issue.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attributeGroup ref="RequiredNameKeyGroup" />
+        <xs:attribute type="xs:integer" name="waitCycle" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Number of monitoring cycles to wait after all the Symptoms conditions listed
+                    in the Alert state are fulfilled, before generating the alert. Minimum is 1.
+                    1 means trigger as soon as the symptom expression (consisting of one or more symptoms) becomes true.
+                    In other words the wait cycle for the alert definition is added to the wait cycle
+                    for the symptom definitions (in case of multiple Symptoms the one with greatest wait cycle).
+                    Defaults to 1 if unspecified.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:integer" name="cancelCycle" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Number of monitoring cycles to wait after all the Symptom conditions listed
+                    in the Alert state no longer exist, before canceling the alert. Minimum is 1.
+                    1 means cancel as soon as the symptom expression (consisting of one or more symptoms) becomes false.
+                    In other words the cancel cycle for the alert definition is added to the cancel cycle
+                    for the symptom definitions (in case of multiple Symptoms the one with greatest cancel cycle).
+                    Defaults to 1 if unspecified.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="adapterKind" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The AdapterKind key of the base object type for which the Alert is defined.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="resourceKind" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The ResourceKind key of the base object type for which the Alert is defined.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="type" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The type of the alert (e.g. 18 which means Storage Alert).
+                    Supported Values: 15 (Application), 16 (Virtualization), 17 (Hardware),
+                    18 (Storage), 19 (Network)</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:integer">
+                    <xs:enumeration value="15" />
+                    <xs:enumeration value="16" />
+                    <xs:enumeration value="17" />
+                    <xs:enumeration value="18" />
+                    <xs:enumeration value="19" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="subType" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The subtype of the alert (e.g. 20 which means Capacity issue).
+                    Supported Values: 18 (Availability), 19 (Performance ), 20 (Capacity), 21 (Compliance), 22 (Configuration)</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:integer">
+                    <xs:enumeration value="18" />
+                    <xs:enumeration value="19" />
+                    <xs:enumeration value="20" />
+                    <xs:enumeration value="21" />
+                    <xs:enumeration value="22" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:boolean" name="disableInBasePolicy" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:boolean" name="allowMultipleAlertsPerResource" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="symptomsetsType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">A logical combination of multiple SymptomSet elements or nested sub SymptomSets elemnets.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="SymptomSets" type="symptomsetsType" maxOccurs="unbounded" minOccurs="0" />
+            <xs:element name="SymptomSet" type="symptomsetType" maxOccurs="unbounded" minOccurs="0" />
+        </xs:sequence>
+        <xs:attribute name="operator" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The logical operator to combine SymptomSets (e.g. "and", "or").</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="and" />
+                    <xs:enumeration value="or" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="symptomsetType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">A collection of one or more Symptom definition references for a resource kind
+                that is related to the resource kind of the base object type.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Symptom" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">Reference to a Symptom that is defined as SymptomDefinition.</xs:documentation>
+                    </xs:annotation>
+                    <xs:attribute type="xs:IDREF" name="ref" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">The reference id of the Symptom Definition defined in this describe file for this adapter</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute type="xs:boolean" name="negateCondition" use="optional">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">Flag to turn on logical negation of the Symptom condition.
+                                If true, Symptom should not be triggered for condition to be
+                                evaluated as true.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="applyOn" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The relationship through which the Symptom definition's resourceKind is related
+                    to the resource kind of the base object type. (e.g. self, child, parent).
+                    "self" means Symptoms deined on the same ResourceKind as the Alert is defined for.
+                    "child" means Symptoms are defined on any child of the ResourceKind of the Alert.
+                    "parent" means Symptoms are defined on any parent of the ResourceKind of the Alert.
+                    "ancestor" means Symptoms are defined on any ancestor of the ResourceKind of the Alert.
+                    "descendant" means Symptoms are defined on any descendant of the ResourceKind of the Alert.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="self" />
+                    <xs:enumeration value="ancestor" />
+                    <xs:enumeration value="parent" />
+                    <xs:enumeration value="descendant" />
+                    <xs:enumeration value="child" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="aggregation" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The type of grouping to be done on the resources that exhibit the specified Symptoms in that
+                    Symptom set. (note: this is not an aggregation of Symptoms, but an aggregation of resources.
+                    like 50 percent of child VMs). If "percent" or "count" then "aggregationOperator" and "value" are required.
+                    Supported Values: percent, count, any, all.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="percent" />
+                    <xs:enumeration value="count" />
+                    <xs:enumeration value="any" />
+                    <xs:enumeration value="all" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="aggregationOperator" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The operator used for aggregation (e.g. "=", "&gt;").
+                    Supported Values: "&gt;" (greater than), "&gt;=" (greater than or equal), "&lt;" (less than),
+                    "&lt;=" (less than or equal), "=", "!="</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="&gt;" />
+                    <xs:enumeration value="&gt;=" />
+                    <xs:enumeration value="&lt;" />
+                    <xs:enumeration value="&lt;=" />
+                    <xs:enumeration value="=" />
+                    <xs:enumeration value="!=" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:double" name="value" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The numeric value used for aggregation evaluation when it is set to percent
+                    or count (e.g. 50)</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:IDREF" name="ref" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">the reference id of the Symptom defined in this describe file for this adapter
+                    (in compact form definition).
+                    The compact form can be used if there is only one Symptom definition reference in the SymptomSet.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="operator" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The operator to apply between the Symptoms in a Symptom set.
+                    (if there is more than one Symptom in the SymptomSet)(e.g. "and", "or").
+                    Supported Values: "and", "or"</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="and" />
+                    <xs:enumeration value="or" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:boolean" name="negateCondition" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The logical negation of the Symptom condition (in compact form definition).
+                    The compact form can be used if there is only one Symptom definition reference in the SymptomSet.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="impactType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Defines what would be impacted. For now the only object is badge and the Impact would be
+                on one of the top level badges.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="type" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The type of the object impacted.
+                    Supported Types: "badge" - (for now only badges are the Impact object)</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="badge" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="key" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The impacted object key.
+                    Supported values: "health" "risk", "efficiency".</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="health" />
+                    <xs:enumeration value="risk" />
+                    <xs:enumeration value="efficiency" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="recommendationsType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">A collection of Recommendation references for this alert definition.
+                All the references should resolve to the Recommendations defined in this adapter describe.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Recommendation" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">A reference to a defined Recommendation.</xs:documentation>
+                    </xs:annotation>
+                    <xs:attribute type="xs:IDREF" name="ref" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">The reference id of the Recommendation.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute type="xs:string" name="priority" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">The order that the Recommendation is displayed in the UI.
+                                Higher priority Recommendations are expected to be better solutions
+                                for resolving the alert.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SymptomDefinitionsType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Collection of SymptomDefinition elements.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="SymptomDefinition" type="SymptomDefinitionType" maxOccurs="unbounded" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="SymptomDefinitionType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">A Symptom definition is a rule or condition to identify and track the state of
+                metrics, properties, events and faults on objects. A Symptom triggers when the
+                Symptom definition rule is satisfied. A Symptom definition can be included in a
+                Alert Definition in order to trigger alert based on the Symptom.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="State" maxOccurs="1" minOccurs="1">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">State defines the condition under which the Symptom should be triggered and
+                            its severity.</xs:documentation>
+                    </xs:annotation>
+                    <xs:sequence>
+                        <xs:element name="Condition" type="ConditionType" maxOccurs="1" minOccurs="1" />
+                    </xs:sequence>
+                    <xs:attribute name="severity" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">The severity (criticality) level of the entire state.
+                                Supported Values: Info, Warning, Immediate, Critical.</xs:documentation>
+                        </xs:annotation>
+                        <xs:simpleType>
+                            <xs:restriction base="xs:string">
+                                <xs:enumeration value="info" />
+                                <xs:enumeration value="Info" />
+                                <xs:enumeration value="warning" />
+                                <xs:enumeration value="Warning" />
+                                <xs:enumeration value="immediate" />
+                                <xs:enumeration value="Immediate" />
+                                <xs:enumeration value="critical" />
+                                <xs:enumeration value="Critical" />
+                            </xs:restriction>
+                        </xs:simpleType>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute type="xs:ID" name="id" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Unique id of the Symptom for this adapter.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:boolean" name="disableInBasePolicy" use="optional" default="false"/>
+        <xs:attributeGroup ref="RequiredNameKeyGroup" />
+        <xs:attribute type="xs:string" name="adapterKind" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The AdapterKind key of the Resource for which the Symptom is defined.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="resourceKind" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The ResourceKind key of the Resource for which the Symptom is defined.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:integer" name="waitCycle" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Number of monitoring cycles to wait after the Symptom state conditions are
+                    fulfilled to make the Symptom active. Minimum is 1.
+                    1 means trigger as soon as the incoming data (ie., the current collection cycle) satisfies the condition.
+                    Defaults to 1 if unspecified.
+                    This only applies to metric and property Symptoms (e.g. condition type ="metric", "htmetric" (deprecated - use metric instead), "dtmetric", "htsuper", "dtsuper", "property").
+                    It is ignored and defaulted to 1 for other type of Symptoms.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:integer" name="cancelCycle" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Number of monitoring cycles to wait after the Symptom state conditions no longer exist
+                    before canceling the Symptom. Minimum is 1.
+                    1 means cancel as soon as the incoming data (ie., the current collection cycle) fails the condition.
+                    Defaults to 1 if unspecified.
+                    This only applies to metric and property Symptoms (e.g. condition type ="metric", "htmetric" (deprecated - use metric instead), "dtmetric", "htsuper", "dtsuper", "property").
+                    It is ignored and defaulted to 1 for other type of Symptoms.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="name" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The name of the symptom when displayed by Aria Operations</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="ConditionType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Defines a condition under which a Symptom will trigger.</xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="type" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Declares type of the condition.
+                    Examples are: "metric" - based on Metric Hard Threshold ,
+                    "dtmetric" - based on Metric Dynamic Threshold, "msg_event" - based on Event Message content
+                    Supported Values: "metric", "htmetric" (deprecated - use metric instead),
+                    "dtmetric", "htsuper" (deprecated - use metric instead), "dtsuper", "fault", "property",
+                    "msg_event", "metric_event"
+                    Note: "smart" is for VMware internal use only.</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="metric" />
+                    <xs:enumeration value="htmetric" />
+                    <xs:enumeration value="dtmetric" />
+                    <xs:enumeration value="htsuper" />
+                    <xs:enumeration value="dtsuper" />
+                    <xs:enumeration value="fault" />
+                    <xs:enumeration value="property" />
+                    <xs:enumeration value="msg_event" />
+                    <xs:enumeration value="metric_event" />
+                    <xs:enumeration value="smart" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="thresholdType" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">indicates the type of the threshold to compare against.
+                    Supported Values: "static", "metric" and "property".
+                    The default is "static" thus falling back to the 6.0 behavior of static thresholds.
+                    If "static" is used the value of this metric/property (mentioned in the key attribute)
+                    would be compared to a static value.
+                    If "metric" or "property" is used then the value of this metric/property(mentioned in the "key" attribute)
+                    would be compared to the value of another metric/property (mentioned in the "targetKey" attribute)</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="static" />
+                    <xs:enumeration value="metric" />
+                    <xs:enumeration value="property" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="targetKey" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">If thresholdType is "metric" or "property", the value of this attribute is the metric/property key that
+                    the value of original metric/property would be compared against.
+                    If thresholdType is "static" then this attribute should not be provided.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="key" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">If condition is of type "metric", "htmetric" (deprecated - use metric instead), "htsuper", "dtmetric", "dtsuper", "property",
+                    "metric_event", then the complete metric or property key
+                    (e.g. Capacity|Used_Space_Percent where "Capacity" is the ResourceGroup name
+                    and "Used_Space_Percent" is the ResourceAttribute name)</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="operator" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The operator used for evaluation of the condition (e.g. "=", "&lt;", "above" for numeric values,
+                    "contains" for event messages...).
+                    It is required for all condition types except "fault" condition types.
+                    Supported Values:
+                    For metric, htmetric(deprecated), htsuper(deprecated) and Numeric property: "&gt;" (greater than), "&gt;=" (greater than or equal),
+                    "&lt;" (less than), "&lt;=" (less than or equal), "=" or "==", "!="
+                    For String property: "=" or "==", "!=", "startswith", "notstartwith", "endswith", "notendwith",
+                    "contains", "notcontain", "regex", "notregex"
+                    For dtmetric and dtsuper: "above", "below", "abnormal"
+                    For metric event: "exists"
+                    For Message event: "equals", "contains", "notcontain", "regex", "notregex"</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="&gt;" />
+                    <xs:enumeration value="&gt;=" />
+                    <xs:enumeration value="&lt;" />
+                    <xs:enumeration value="&lt;=" />
+                    <xs:enumeration value="=" />
+                    <xs:enumeration value="==" />
+                    <xs:enumeration value="!=" />
+                    <xs:enumeration value="startswith" />
+                    <xs:enumeration value="notstartwith" />
+                    <xs:enumeration value="endswith" />
+                    <xs:enumeration value="notendwith" />
+                    <xs:enumeration value="above" />
+                    <xs:enumeration value="below" />
+                    <xs:enumeration value="abnormal" />
+                    <xs:enumeration value="exists" />
+                    <xs:enumeration value="equals" />
+                    <xs:enumeration value="contains" />
+                    <xs:enumeration value="notcontain" />
+                    <xs:enumeration value="regex" />
+                    <xs:enumeration value="notregex" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:boolean" name="instanced" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Applicable only for "metric", "htmetric" (deprecated - use metric instead), "dtmetric", "htsuper" and "dtsuper" types.
+                    True if the Symptom should be evaluated by considering ResourceGroup instance
+                    for the metric, false otherwise.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="value" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The value used for evaluation of the condition.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="valueType" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The type of the value (e.g. "numeric","string").</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="numeric" />
+                    <xs:enumeration value="string" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="faultevent" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Applicable only for fault condition. A comma-separated list of one or more
+                    fault event keys (key attribute of ProblemEvent element in describe).</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:integer" name="eventType" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">The type of the event. Needed only for msg_event or metric_event condition.
+                    (e.g. "11" means "Notification" event)</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:integer" name="eventSubType" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">If an event condition, the subtype of the event.
+                    (e.g. "5" means "external" event)</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute type="xs:string" name="eventMsg" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Content of the message of the event to match.
+                    Needed only for msg_event condition.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <!--xsd:assert test="(@type and @key and @operatornot(@uri)) or (not(@ref) and @uri)"/ -->
+    </xs:complexType>
+    <xs:complexType name="RecommendationsType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Collection of Recommendation elements.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Recommendation" type="RecommendationType" maxOccurs="unbounded" minOccurs="0" />
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RecommendationType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">Recommendation definition containing a descriptive text as how to remediate the alert
+                condition. It can optionally include an action to run.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Description" maxOccurs="1" minOccurs="0" >
+                <xs:complexType mixed="true">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">The Recommendation text.</xs:documentation>
+                    </xs:annotation>
+                    <xs:attributeGroup ref="RequiredNameKeyGroup" />
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Action" maxOccurs="1" minOccurs="0">
+                <xs:complexType>
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">The Recommendation's automated Action's information.</xs:documentation>
+                    </xs:annotation>
+                    <xs:attribute type="xs:string" name="actionAdapterKey" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">The adapter kind of the adapter that defines this action.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute type="xs:string" name="targetResourceKind" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">The resource kind for which this Recommended Action applies to.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute type="xs:string" name="actionKey" use="required">
+                        <xs:annotation>
+                            <xs:documentation xml:lang="en">The key for this action. This corresponds to the Action Key
+                                field in the Action Definition.</xs:documentation>
+                        </xs:annotation>
+                    </xs:attribute>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute type="xs:ID" name="key" use="required">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Unique key to identify the Recommendation within this adapter. Referenced from AlertDefinition.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:attributeGroup name="RequiredNameKeyGroup">
+        <xs:attribute name="nameKey" type="xs:integer" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Localized name id for the adapter.
+                    The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="OptionalNameKeyGroup">
+        <xs:attribute name="nameKey" type="xs:integer" use="optional">
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Localized name id for the adapter.
+                    The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
+</xs:schema>

@@ -1,0 +1,2298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:describe="http://schemas.vmware.com/vcops/schema" elementFormDefault="qualified" targetNamespace="http://schemas.vmware.com/vcops/schema" version="8.3.0">
+	<xs:element name="AdapterKind" type="describe:AdapterKindType" />
+	<xs:complexType name="AdapterKindType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">The top level element for any adapter describe. Defines the adapter kind key,
+				version and other adapter level attributes.
+				Every adapter must have a single AdapterKind entry in the describe that has a key
+				matching the KINDKEY property in the adapter.properties file</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element name="ResourceKinds" type="describe:ResourceKindsType">
+				<xs:unique name="resourceKindTypeKey">
+					<xs:selector xpath="./*"/>
+					<xs:field xpath="@key"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="CredentialKinds" type="describe:CredentialKindsType" minOccurs="0">
+				<xs:unique name="CredentialKindsTypeKey">
+					<xs:selector xpath="./*"/>
+					<xs:field xpath="@key"/>
+				</xs:unique>
+			</xs:element>
+			<!--			no change-->
+			<xs:element name="CustomGroupMetrics" type="describe:CustomGroupMetricsType" minOccurs="0"/>
+			<xs:element name="CapacityDefinitions" type="describe:CapacityDefinitionsType" minOccurs="0"/>
+			<xs:element name="Faults" type="describe:FaultsType" minOccurs="0"/>
+			<xs:element name="LaunchConfigurations" type="describe:LaunchConfigurationsType" minOccurs="0"/>
+			<xs:element name="BasePolicyAnalysisSettings" type="describe:BasePolicyAnalysisSettingsType" minOccurs="0"/>
+			<xs:element name="UnitDefinitions" type="describe:UnitDefinitionsType" minOccurs="0"/>
+			<xs:element name="OOTBPolicies" type="describe:OOTBPoliciesType" minOccurs="0"/>
+			<xs:element name="Names" type="describe:NamesType" minOccurs="0"/>
+
+			<!--			new elements	-->
+			<xs:element name="FavoriteGroups" type="describe:FavoriteGroupsType" minOccurs="0" />
+		</xs:all>
+		<xs:attribute name="key" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Adapter kind key. A unique string that identifies the adapter.
+					Only one adapter with specified key can be present in the product.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+		<xs:attribute name="version" type="xs:integer" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Version number of the adapter. Versions are used by the describe mechanism to determine
+					if Describe Upgrade is required. If the version in the database is lower than the version
+					returned by the adapter describe the database will be updated according to the latest version.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="handleMultiCollection" type="xs:boolean" use="optional" default="false">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="CredentialKindsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Collection of CredentialKind declarations. Declares all kinds of credentials supported by given adapter.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CredentialKind" type="describe:CredentialKindType" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CredentialKindType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Declares a collection of fields that can be used for identification and authentication.
+				For example a simple credential kind can declare 2 fields: user name and password.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CredentialField" type="describe:CredentialFieldType" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="key" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Credential kind key, used to identify the credential type for a given adapter.
+					Credential kind keys must be unique for a given adapter</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+	</xs:complexType>
+	<xs:complexType name="CredentialFieldType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Credential field declaration, e.g. user name or password.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="enum" type="describe:enumType" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="dispOrder" type="xs:integer" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the order of credential fields in the UI. Credential fields will be presented
+					in ascending order.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="default" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Default value for the field.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="key" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Used to identify the credential field for a given credential kind.
+					Credential field keys must be unique for a given credential kind.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+		<xs:attribute name="required" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">True if user entry is required for given credential field. Otherwise false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="password" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Declares the credential field as password field.
+					As a result the value entered will not be displayed in clear text. Default="false".</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="passwordAlphabet" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Deprecated. Specifies the alphabet for automatically generated passwords.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="enum" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Declares the credential field as enumerated field. Default="false".
+					All types except enum will be displayed as text box. Credential fields of enum type will be displayed
+					as a combo box containing all enum values listed in the node value.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isAutomaticallyManaged" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Deprecated. Enables automatic password update logic.
+					Applicable only for adapters that have password change ability on the source system.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="passwordLength" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Deprecated. Specifies the length for automatically generated passwords.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="type" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">expected type of credential field value.
+					Used by UI to present it properly and validate user input.
+					Supported values:string, integer, host, ip.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="string" />
+					<xs:enumeration value="integer" />
+					<xs:enumeration value="host" />
+					<xs:enumeration value="ip" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ResourceKindsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Collection of ResourceKind declarations.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ResourceKind" type="describe:ResourceKindType" maxOccurs="unbounded">
+				<xs:unique name="resourceKindKey">
+					<xs:selector xpath="./*"/>
+					<xs:field xpath="@key"/>
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="ResourceKindType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Declares a resource kind.
+				Resource kinds define types of resources,
+				their specifics, identifiers, list of groups and attributes (metrics), etc.</xs:documentation>
+		</xs:annotation>
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="ResourceIdentifier" type="describe:ResourceIdentifierType">
+				<xs:unique name="resourceIdentifierKey">
+					<xs:selector xpath="./*"/>
+					<xs:field xpath="@key"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="ResourceAttribute" type="describe:ResourceAttributeType">
+				<xs:unique name="resourceAttributeKey">
+					<xs:selector xpath="./*"/>
+					<xs:field xpath="@key"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="ResourceGroup" type="describe:ResourceGroupType">
+				<xs:unique name="resourceGroupKey">
+					<xs:selector xpath="./*"/>
+					<xs:field xpath="@key"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="ComputedMetrics" type="describe:ComputedMetricsType">
+				<xs:unique name="ComputedMetricKey">
+					<xs:selector xpath="./*"/>
+					<xs:field xpath="@key"/>
+				</xs:unique>
+			</xs:element>
+			<xs:element name="PowerState" type="describe:PowerStateType"/>
+			<xs:element name="Icon" type="describe:IconType" />
+		</xs:choice>
+		<xs:attribute name="key" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">used to identify the resource kind for a given adapter.
+					Resource kind keys must be unique for a given adapter.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+		<xs:attribute name="showTag" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true the resource kind shows where the Tags are shown in UI.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="type" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The type of the resource kind.
+					If not specified the resource kind type is defaulted to "general". Supported types are:
+					unspecified or 1 - general resource kind type
+					2 - "Business Service" resource kind type
+					3 - Tier resource kind type
+					4 - Tag resource kind type, designed to group resources by the specific indicator.
+					E.g. VMs which are powered on - "VM Entity Status" tag resource in VMWare adapter.
+					7 - "Adapter Instance" resource kind type
+					8 - Group resource kind type, designed to hold all resources. Resources of this type appear as Custom Groups in UI.
+					E.g. "vSphere World" group resource kind which contains all resources of the VMWare adapter.
+					All other types are reserved for future or internal use.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:integer">
+					<xs:enumeration value="1" />
+					<xs:enumeration value="2" />
+					<xs:enumeration value="3" />
+					<xs:enumeration value="4" />
+					<xs:enumeration value="7" />
+					<xs:enumeration value="8" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="subType" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The subtype of the resource kind.
+					If not specified the resource kind subtype is defaulted to "general". Supported types are:
+					unspecified or 1 - general resource kind subtype
+					2 - geo resource kind subtype
+					3 - Enterprise resource kind subtype
+					4 - Indicating an adapter managed group type. Applicable when the resource kind is of type 8
+					5 - Indicating a rules managed group type. Applicable when the resource kind is of type 8
+					6 - subtype for world objects
+					All other types are reserved for future or internal use.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:integer">
+					<xs:enumeration value="1" />
+					<xs:enumeration value="2" />
+					<xs:enumeration value="3" />
+					<xs:enumeration value="4" />
+					<xs:enumeration value="5" />
+					<xs:enumeration value="6" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="credentialKind" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Comma-delimited list of credential kind keys that can be used to configure resources of given kind.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="capacityModel" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The value of CapacityDefinition's "key" attribute (if any).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="monitoringInterval" type="xs:integer" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Default monitoring interval for adapter instance kind (in minutes if monitoringIntervalTimeUnit is not specified).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="monitoringIntervalTimeUnit" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Time unit for default monitoring interval.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="worldObjectName" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Default name for world object.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="dynamic" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If the resource kind is specified in describe.xml, dynamic is false (unspecified).
+					If the resource kind is created in the code, dynamic should be set to true (in the code).
+					During a re-describe the dynamic ResourceKinds would not be synchronized,
+					so all the underlying metrics and groups that exist in the database would remain unchanged,
+					while non-dynamic ResourceKinds metrics that do not exist in the new describe document,
+					would be removed.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isSingleton" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isUnmovable" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isCredentialRequired" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If the attribute is set to true, then the Credential element for the ResourceKind element is required,
+					meaning that during resource creation the user shall provide a credential or the call to create the resource will fail.
+					If the attribute is set to false, then the user can omit providing a credential.
+					If missing, it defaults to true.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ResourceIdentifierType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Declares a resource identifier type that will appear in the edit resource screen and can be
+				used for resource identification as well as informational purposes.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="enum" type="describe:enumType" minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="dispOrder" type="xs:integer" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the order of identifiers in the UI. Identifiers will be presented in ascending order.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="key" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">used to identify the resource identifier type for a given resource kind.
+					Resource kind identifier keys must be unique for a given resource kind.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+		<xs:attribute name="required" type="xs:boolean" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">true if user entry is required for given identifier. Otherwise false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="type" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Expected type of identifier value. Used by UI to present it properly and validate user input.
+					Supported values:string, integer, host, ip.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="string" />
+					<xs:enumeration value="integer" />
+					<xs:enumeration value="host" />
+					<xs:enumeration value="ip" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="length" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Maximum length of identifier value. Used for UI validation</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="enum" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Declares the identifier field as enumerated field. Default="false".
+					All types except enum will be displayed as text box.
+					Identifiers of enum type will be displayed as a combo box containing all enum values
+					listed in the node value.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="default" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Default value for the identifier.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="identType" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the identifier type.
+					Supported values are "1" - part of uniqueness, "2" - not part of uniqueness.
+					By default identifiers are part of uniqueness.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:integer">
+					<xs:enumeration value="1" />
+					<xs:enumeration value="2" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="enumMultiSelect" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Multi-selectable enum support for identifiers.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ResourceGroupType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">ResourceGroup declares a metric group that belongs to the resource kind and defines
+				the metric hierarchy. Groups can contain subgroups and metrics.</xs:documentation>
+		</xs:annotation>
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="ResourceAttribute" type="describe:ResourceAttributeType" />
+			<xs:element name="ResourceGroup" type="describe:ResourceGroupType" />
+		</xs:choice>
+		<xs:attribute name="instanced" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Not supported from 6.0.0 version.
+					Defines the group as instanced and allows user entry for instance names in the
+					Attribute package editor UI.
+					Note: groups do not have to define instanced="true" in order to be able to send instanced metrics.
+					The only result of defining instanced="true" is having ability to list instance names in the UI.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="key" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Used to identify the resource attribute group type for a given resource kind.
+					Resource kind attribute group keys must be unique for a given parent resource kind attribute group.
+					Attribute groups defined at top level must have unique keys for given resource kind.
+					NOTE: The value of the key cannot contain '|' (pipe) or ':' (colon) special symbols.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+		<xs:attribute name="validation" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Regular expression for validating instance name entry while entering instance names
+					in attribute package editor. If not specified no validation will be performed.
+					Instance name validation is preformed with AND logic, so valid names must satisfy all
+					conditions at the same time.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="instNameKey" type="xs:integer" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Localized name id for the instance field that will be shown in the UI.
+					The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="instType" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Type of instance value used for validation of user entry. Used by UI to validate user input.
+					Supported values:string, integer, host, ip. If not specified no typovalidation will be performed</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="string" />
+					<xs:enumeration value="integer" />
+					<xs:enumeration value="host" />
+					<xs:enumeration value="ip" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="instanceRequired" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Not supported from 6.0.0 version.
+					Defines if the instance entry is required. If true, no metric data will be collected for
+					given group unless instance names are specifically entered. This is mostly useful when
+					collecting data for all instances is not desireable. For example for the Process group
+					where instance is the process name it is usually menaingful to collect metrics for only
+					specific processes instead of all processes. In that case setting instanceRequired="true"
+					will prevent from collecting all instances by default.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isInstanceResourceId" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If the instance name of this group is a Resource ID (the internal integer number that is assigned to a Resource),
+					then if this attribute is set to true, instead of the Resource ID, the name of the Resource would be displayed in UI.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ComputedMetricsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Collection of ComputedMetric declarations.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ComputedMetric" maxOccurs="unbounded" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">Each ComputedMetric element defines a new metric computed based on existing metrics.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attribute name="key" type="xs:string" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The computed metric's key.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="expression" type="xs:string" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The computed metric's expression (computation formula).</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="PowerStateType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">The power state of definition of a Resource.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PowerStateValue" maxOccurs="unbounded" minOccurs="2">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">The power state value element.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attribute name="key" type="xs:string" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The power state unique key.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="value" type="xs:string" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The power state value (e.g. PowerOn or PowerOff.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="alias" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Property Attribute this is aliased as Power State.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="IconType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Declares object icon name definition mechanism based on property/metric/identifier and value/existence conditions.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="Condition">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element maxOccurs="unbounded" name="Case">
+							<xs:complexType>
+								<xs:sequence minOccurs="0">
+									<xs:element maxOccurs="unbounded" name="Condition">
+										<xs:complexType>
+											<xs:sequence>
+												<xs:element maxOccurs="unbounded" name="Case">
+													<xs:complexType>
+														<xs:attribute name="value" type="xs:string" use="optional" />
+														<xs:attribute name="suffix" type="xs:string" use="required" />
+														<xs:attribute name="exists" type="xs:boolean" use="optional" />
+													</xs:complexType>
+												</xs:element>
+											</xs:sequence>
+											<xs:attribute name="property" type="xs:string" use="optional" />
+											<xs:attribute name="metric" type="xs:string" use="optional" />
+											<xs:attribute name="identifier" type="xs:string" use="optional" />
+										</xs:complexType>
+									</xs:element>
+								</xs:sequence>
+								<xs:attribute name="value" type="xs:string" use="optional" />
+								<xs:attribute name="suffix" type="xs:string" use="required" />
+								<xs:attribute name="exists" type="xs:boolean" use="optional" />
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+					<xs:attribute name="property" type="xs:string" use="optional" />
+					<xs:attribute name="identifier" type="xs:string" use="optional" />
+					<xs:attribute name="metric" type="xs:string" use="optional" />
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="NamesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Collection of Name (name) elements.
+				Localized names can be externalized to resources property file.</xs:documentation>
+		</xs:annotation>
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="Name" type="describe:NameType" />
+			<xs:element name="name" type="describe:NameType" />
+		</xs:choice>
+		<xs:attribute name="lang" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Language code (e.g. "en" for English)</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="NameType" mixed="true">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Localized name declaration that can be referred to from other declarations.
+				Name key for a Name entry can be reused by multiple components, e.g. Multiple attributes having
+				the same meaning that belong to different resource kinds can use the same Name declaration
+				by specifying the same name_id value.
+				Only one Name entry with a given key can be present in a Names declaration.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="key" type="xs:integer" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The name_id identifier for given Name entry. This value can be used as name_id value when
+					referring to the localized name from other entity declarations. Name keys must be unique
+					for given Names group.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="shortName" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Short localized name that will be displayed in UI. The string is case sensitive.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="enumType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Declares an enumerated entry that can be used as part of other entry, e.g. ResourceIdentifier,
+				CredentialField, DiscoveryParam, etc. Enum declarations are normally enclosed as child nodes
+				of a specific field declaration, e.g. ResourceIdentifier</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="value" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Textual value for the enumerated entry that will appear in the combo box.
+					Note: enumerated values are not localizable.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="default" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If true the enumeration entry is selected by default</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:OptionalNameKeyGroup" />
+	</xs:complexType>
+	<xs:complexType name="ResourceAttributeType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">ResourceAttribute declares a metric that belongs to the resource kind in a
+				certain level of group hierarchy.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="key" use="required" type="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Used to identify the resource attribute type for a given resource kind.
+					Resource kind attribute keys must be unique for a given parent resource kind attribute group.
+					Attributes defined at top level must have unique keys for given resource kind.
+					NOTE: The value of the key cannot contain '|' (pipe) or ':' (colon) special symbols.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="unit" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unit of measurement the metric. eg. MB, GHz and etc.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:integer" name="unitNameKey" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Localized name id for the unit of measurement.
+					The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="dashboardOrder" use="optional" type="xs:integer">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the order of attributes in the UI where applicable.
+					Attributes will be presented in ascending order.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="dataType" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the data type of the metric. Supported values:string, integer, float.
+					Specifying a data type for attributes is not really required for numeric attributes.
+					Generally attributes can have either numeric (i.e. integer, float) or string values.
+					Currently specifying integer is same as float.
+					String metrics can be visualized in the metric graph in a different way,
+					using discrete data points, while numeric metrics are visualized by a continuous metric graph.
+					Default is float.</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="string" />
+					<xs:enumeration value="integer" />
+					<xs:enumeration value="long" />
+					<xs:enumeration value="float" />
+					<xs:enumeration value="double" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+		<xs:attribute name="isProperty" use="optional" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Declares the attribute as a Property. Properties are slowly changing attributes that
+					only reported to the system when updated. Typically configuration information is defined
+					as properties, e.g. software version, number of CPUs, available memory, etc.
+					If not specified the attribute is considered as a regular attribute, not a property.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isPropertyHistoryEnabled" use="optional" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Declares if Property should store historic value changes in database or only last value.
+					Set true value if property usage is being limited to retrieval of last stored property value.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isRate" use="optional" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Declares the attribute values are rates, ususally based on difference of last 2 measurements.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isDiscrete" use="optional" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Declares the attribute values are discrete numbers, as opposed to regular - continuous numbers.
+					This value in combination with dataType and dtType can control the way the
+					metric values are presented in the UI.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isKpi" use="optional" type="xs:boolean" default="false">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Declares the attribute value as a KPI attribute.
+					The flag is used in calculation of the "Self - Health Score" metric for an object,
+					which in turn affects the "Anomalies" badge score for that object.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="isImpact" use="optional" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Declares the attribute as an "impact" attribute, so it will never be considered as
+					part of a root cause. For example a user response time measurement out of normal is not
+					the root cause of the alert, but normally impacted by some other performance issue.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="defaultMonitored" use="optional" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines if the attribute should be collected by default in policy</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="collectInstances" use="optional" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines if the attribute instances should be collected by default in policy</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="dtType" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the preferred dynamic thresholding algorithm to process the attribute.
+					For example "string" metrics can be set to dtType='multinomial', so they will be
+					processed by MultinomialDT dynamic thresholding algorithm.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="keyAttribute" type="xs:boolean" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true the attribute would be considered as a key attribute and would appear
+					in certain widgets (e.g. badge widgets).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<!-- deprecated -->
+		<xs:attribute name="defLowThreshold" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Deprecated.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="defaultAlertLevel" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Deprecated.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="defHighThreshold" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Deprecated.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="maxVal" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Deprecated.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="minVal" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Deprecated.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="expression" type="xs:string" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="derived" use="optional" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="hidden" use="optional" type="xs:boolean">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="favoriteGroups" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Names of the metric favorite groups. Defines the list of metric favorite group names separated by ";" delimiter.
+					For example favoriteGroups="FavoriteGroup1;FavoriteGroup2".</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="favoriteInstances" use="optional" type="xs:string">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Names of the metric instances to group in the metric favorite groups. Defines the list of metric instances names separated by ";" delimiter.
+					For example favoriteGroups="Group1" favoriteInstances="MetricFavoriteInstance1;MetricFavoriteInstance2".
+					In this example the metric instances "MetricFavoriteInstance1" and "MetricFavoriteInstance2" will be shown in groups "Group1".
+					NOTE: The favoriteInstances attribute will not have any effect if there is no any favorite group defined for the metric.
+					Instanced metrics won't be grouped under the metric favorite groups if those are not defined in favorite instances list.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<!--		Even if the attributes have default values, the values don't seem to be assigned for the assertion step when they aren't present in the element.-->
+		<xs:assert test="@isProperty or ((not(@isProperty) or not(exists(@isProperty))) and (not(exists(@dataType)) or @dataType != 'string'))" >
+			<xs:annotation>
+				<xs:documentation xml:lang="en"> 'string' dataType is only available for ResourceAttribute with attribute isProperty = true </xs:documentation>
+			</xs:annotation>
+		</xs:assert>
+
+	</xs:complexType>
+	<xs:simpleType name="PropertyDatatypeType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Describes the data type</xs:documentation>
+		</xs:annotation>
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="String" />
+			<xs:enumeration value="SInt32" />
+			<xs:enumeration value="UInt32" />
+			<xs:enumeration value="SInt64" />
+			<xs:enumeration value="UInt64" />
+			<xs:enumeration value="Decimal" />
+			<xs:enumeration value="Double" />
+			<xs:enumeration value="Boolean" />
+			<xs:enumeration value="DateTime" />
+			<xs:enumeration value="Binary" />
+			<xs:enumeration value="Byte" />
+			<xs:enumeration value="Enum" />
+			<xs:enumeration value="TypeName" />
+			<xs:enumeration value="Any" />
+			<xs:enumeration value="Integer" />
+			<xs:enumeration value="SnapshotData" />
+			<xs:enumeration value="ProcessesData" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:complexType name="CapacityDefinitionsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A Collection of CapacityDefinition elements.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CapacityDefinition" type="describe:CapacityDefinitionType" maxOccurs="unbounded" minOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="CapacityDefinitionType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Each CapacityDefinition contains information (mapping) for badge computation.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Config" maxOccurs="1" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">For VMware internal use only.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:choice>
+						<xs:element name="HAPolicy" maxOccurs="1" minOccurs="0">
+							<xs:complexType>
+								<xs:attribute type="xs:string" name="alias" use="required" />
+							</xs:complexType>
+						</xs:element>
+					</xs:choice>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="ResourceContainer" type="describe:ResourceContainerType" maxOccurs="unbounded" minOccurs="1" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="key" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Unique key to identify a capacity definition.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="consumer" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Specifies the resource kind of resources consuming the defined capacity.
+					If no consumer is defined, capacity consumer for each object is itself.
+					If no consumers are provided, density badge will not be available.
+					Also, you can only do what ifs based on percentage or value increases and not by adding consumers.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="consumerPath" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Not supported in current version. It's supposed to represent complex consumer relationship.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="provider" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Specifies the resource kind of resources providing the defined capacity.
+					If no provider is defined, the only effect is that you can modify what ifs only based on percentage and
+					value increases and not by adding providers.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="defaultProvider" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Specifies the resource kind of default provider.
+					defaultProvider is used only if you have more than one provider for a given capacity definition.
+					In such cases, defaultProvider will be used for density computations (density is something like consumer : provider) ratio.
+					For example, in vSphere for cluster there are two providers: host for cpu/mem and datastore for disk space.
+					In this case, defaultProvider=host and is used for density computations.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:group name="CapacityMetricsDescribeGroup">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">This is the section that defines how each metric (eg. Capacity, Usage, and etc) is computed
+				(or mapped to a resource metric). Out of all metrics, at least, Capacity and Usage should be aliased.
+				The more aliases, the richer the model.</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="Usage" maxOccurs="1" minOccurs="1">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the Usage parameter in CapacityDefinition model.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Demand" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the Demand parameter in CapacityDefinition model.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Capacity" maxOccurs="1" minOccurs="1">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the Capacity parameter in CapacityDefinition model.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="PowerState" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the PowerState parameter in CapacityDefinition model.
+							For VMware internal use only.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Reservation" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the Reservation parameter in CapacityDefinition model.
+							For VMware internal use only.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Limit" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the Limit parameter in CapacityDefinition model.
+							For VMware internal use only.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="AccessTime" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the AccessTime parameter in CapacityDefinition model.
+							For VMware internal use only.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="ChildCount" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the ChildCount parameter in CapacityDefinition model.
+							For VMware internal use only. Deprecated.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Overhead" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the Overhead parameter in CapacityDefinition model.
+							For VMware internal use only.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Contention" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the Contention parameter in CapacityDefinition model.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="Entitlement" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the Entitlement parameter in CapacityDefinition model.
+							For VMware internal use only.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="MaxConsumerCount" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the MaxConsumerCount parameter in CapacityDefinition model.
+							For VMware internal use only. Deprecated.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="CapacityConsumptionUnitCount" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the metric that represents the CapacityConsumptionUnitCount parameter in CapacityDefinition model.
+							For VMware internal use only.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="alias" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="ConsumptionCountUnit" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">The unit to use for count based capacity consumption, if applicable.
+							For example, CPU may have a unit of Mhz, but since there is a semantic of
+							count based consumption in terms of CPU cores, it can have a
+							consumptionCountUnit of 'Cores(s)'.
+							For VMware internal use only.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:integer" name="unitNameKey" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Localized name id for the unit.
+								The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="HAConfig" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the configuration setting to use when accounting for reduced capacity
+							due resources reserved for High Availability (vShpere specific).
+							For VMware internal use only.</xs:documentation>
+					</xs:annotation>
+					<xs:choice>
+						<xs:element name="IsDedicatedResource" maxOccurs="1" minOccurs="0">
+							<xs:complexType>
+								<xs:annotation>
+									<xs:documentation xml:lang="en">Defines the metric that represents the IsDedicatedResource parameter in CapacityDefinition model.
+										For VMware internal use only.</xs:documentation>
+								</xs:annotation>
+								<xs:attribute type="xs:string" name="alias" use="required">
+									<xs:annotation>
+										<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+									</xs:annotation>
+								</xs:attribute>
+							</xs:complexType>
+						</xs:element>
+						<xs:element name="HAProvider" maxOccurs="1" minOccurs="0">
+							<xs:complexType>
+								<xs:annotation>
+									<xs:documentation xml:lang="en">Defines the metric that represents the HAProvider parameter in CapacityDefinition model.
+										For VMware internal use only.</xs:documentation>
+								</xs:annotation>
+								<xs:attribute type="xs:string" name="alias" use="required">
+									<xs:annotation>
+										<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+									</xs:annotation>
+								</xs:attribute>
+							</xs:complexType>
+						</xs:element>
+						<xs:sequence>
+							<xs:element name="BufferPercent" maxOccurs="1" minOccurs="0">
+								<xs:complexType>
+									<xs:annotation>
+										<xs:documentation xml:lang="en">Defines the metric that represents the BufferPercent parameter in CapacityDefinition model.
+											For VMware internal use only.</xs:documentation>
+									</xs:annotation>
+									<xs:attribute type="xs:string" name="alias" use="required">
+										<xs:annotation>
+											<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+							<xs:element name="ResourceCount" maxOccurs="1" minOccurs="0">
+								<xs:complexType>
+									<xs:annotation>
+										<xs:documentation xml:lang="en">Defines the metric that represents the ResourceCount parameter in CapacityDefinition model.
+											For VMware internal use only.</xs:documentation>
+									</xs:annotation>
+									<xs:attribute type="xs:string" name="alias" use="required">
+										<xs:annotation>
+											<xs:documentation xml:lang="en">The resource metric key that is assigned to the specified capacity metric.</xs:documentation>
+										</xs:annotation>
+									</xs:attribute>
+								</xs:complexType>
+							</xs:element>
+						</xs:sequence>
+					</xs:choice>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:group>
+	<xs:complexType name="ResourceContainerType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Defines the capacity model grouping.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ResourceContainer" type="describe:ResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+			<xs:group ref="describe:CapacityMetricsDescribeGroup" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="key" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Uniquely identifies the ResourceContainer. This can be used to refer to the ResourceContainer
+					from other places in describe document.
+					NOTE: The value of the key cannot contain '|' (pipe) or ':' (colon) special symbols.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:OptionalNameKeyGroup" />
+		<xs:attribute type="xs:string" name="unit" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unit of measurement the metric. eg. MB, GHz and etc.
+					The unit must be a system unit or a custom unit.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:integer" name="unitNameKey" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Localized name id for the unit of measurement.
+					The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:integer" name="displayOrder" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the order of ResourceContainer in the UI in ascending order.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="instanced" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">True if the capacity model group is instanced, false otherwise.
+					If set to true, the capacity will be calculated for each instance, e.g. Disk snapshot.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="workloadInstanced" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If true the instance level workload computation is enabled.
+					If set to true, the workload will be calculated for each instance.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="instanceAgg" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Aggregate data from related objects (consumers/providers).
+					This is related with instanced attribute. Default is false.
+					If set to true, the capacity model will aggregate all instances' capacity, if the instanced is set to true.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="model" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the model type for CapacityDefinition of this ResourceContainer.
+					Supported Values: default, alloc, rollupContainer, usageOnlyWaste. The default is usage.
+					rollupContainer, usageOnlyWaste are For VMware internal use only.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="consumerResourceContainerKey" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The key of the container on the consumer which should be used for computations when the consumer container
+					is different from the provider.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="providerResourceContainerKey" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The key of the container on the provider which should be used for computations when the provider container
+					is different from the consumer.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="publishMetrics" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">True to publish calculated metrics. If attribute is not included it defaults to true.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="consumer" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Specifies the resource kind of the consuming resources.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="consumerPath" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Not supported in current version. It's supposed to represent complex consumer relationship.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="provider" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Uniquely identifies the ResourceContainer. This can be used to refer to the ResourceContainer
+					from other places in describe document.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="workloadBreakdownResourceKinds" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.
+					Uniquely identifies the ResourceContainer. This can be used to refer to the ResourceContainer
+					from other places in describe document.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="whatIfApplicable" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to false means the container will not participate in whatif project computations.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="whatIfInternal" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true, conatiner will not be visualized in whatif projects.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="isCapacityEstimated" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Set to true if capacity is estimated.
+					When true is provided, the capacity is estimated based on the max observed.
+					Since user can assign the max observed metric to the capacity, this functions more like a flag, internally,
+					it is not participate in the computation.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="isComputeFromConsumers" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true the computations for the container will be based on the relevant container on consumers.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="isComputeFromProviders" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true, computations for the container will be based on the relevant container on providers.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:long" name="minimumSizeRecommendation" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.
+					Minimum size recommendation. If present non zero calculated size recommendation for the container will be at least
+					equal to minimumSizeRecommendation.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:integer" name="modularityForSizeRecommendation" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.
+					Modularity for size recommendation. If present calculated Size recommendation for the container would always be multiple of modularityForSizeRecommendation.
+					We always round calculated size recommendation to the next valid value based on modularity for e.g. if calculated size recommendation is 233 and modularityForSizeRecommendation
+					is 4, then size recommendation will be rounded to 236 which is next valid value based on modularity .</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:integer" name="physicalUnitNameKey" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Additional unit name key for a container for e.g. cpu may have two units i.e. Physical Cpu (pCpu) or Virtual Cpu (vCpu).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="LaunchConfigurationsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Collection of LaunchConfig and ConfigMapping elements.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence maxOccurs="unbounded" minOccurs="1">
+			<xs:element name="LaunchConfig" type="describe:LaunchConfigType" maxOccurs="unbounded" minOccurs="1" />
+			<xs:element name="ConfigMapping" type="describe:ConfigMappingType" maxOccurs="unbounded" minOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="LaunchConfigType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">The Launch Configuration that creates a link in UI in order to launch an external application
+				(or any internal landing page) via "URL" in a specific context defined by selected Resource or Alert.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element type="xs:string" name="HostProtocol">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">The domain url to launch.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element type="xs:string" name="UriTemplate">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">The request parameters passed to launch url.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="Variable" maxOccurs="unbounded" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Used to define variables to be used in HostProtocol and UriTemplate.</xs:documentation>
+					</xs:annotation>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute type="xs:string" name="name" use="required">
+								<xs:annotation>
+									<xs:documentation xml:lang="en">Name of the variable.</xs:documentation>
+								</xs:annotation>
+							</xs:attribute>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="key" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Unique key to idenitfy a Launch Configuration for a given adapter.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="adapterKindKey" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Regular Expression to match the AdapterKinds of the selected Resource (Resource in context).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="resourceKindKey" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Regular Expression to match ResourceKind of the selected Resource (Resource in context).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+		<xs:attribute type="xs:string" name="alertType" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Regular Expression to match the alert Type of the selected Alert (Alert in context).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="alertSubType" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Regular Expression to match the alert Subtype of the selected Alert (Alert in context).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="active" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Regular Expression allows an adapter writer to provide an expression to control when the config is valid
+					beyond just matching adapter, resource and alerts kinds. For example, it is used by the log insight adapter
+					to check for the existing of a "special relationship" between "special resources" pushed
+					into vC Ops through HttpPost.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ConfigMappingType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">The map of all pages in vC Ops that the launch link will appear. e.g. "environment-overview",
+				"resource-detail", alerts-overview, ...</xs:documentation>
+		</xs:annotation>
+		<xs:simpleContent>
+			<xs:extension base="xs:string">
+				<xs:attribute type="xs:string" name="uiConfigKey" use="required">
+					<xs:annotation>
+						<xs:documentation xml:lang="en">The name of the page where the link will appear</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute type="xs:string" name="launchConfigKey" use="required">
+					<xs:annotation>
+						<xs:documentation xml:lang="en">The key of maching LaunchConfig.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute type="xs:integer" name="dispOrder" use="required">
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the order of LaunchConfig links in the UI in ascending order.</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+			</xs:extension>
+		</xs:simpleContent>
+	</xs:complexType>
+	<xs:complexType name="CustomGroupMetricsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Used to created new metrics for CustomGroups based on the "expression" attribute of the "ResourceAttribute".
+				See ResourcGroup and ResourceAttribute elements.</xs:documentation>
+		</xs:annotation>
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:sequence>
+				<xs:element name="ResourceGroup" type="describe:ResourceGroupType" maxOccurs="unbounded" minOccurs="0" />
+			</xs:sequence>
+			<xs:sequence>
+				<xs:element name="ResourceAttribute" type="describe:ResourceAttributeType" maxOccurs="unbounded" minOccurs="0" />
+			</xs:sequence>
+			<xs:element name="ComputedMetrics" type="describe:ComputedMetricsType" maxOccurs="unbounded" minOccurs="1" />
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="FaultsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A collection of FaultState elements.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="FaultState" type="describe:FaultStateType" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FaultStateType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">The state that defines the fault.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ProblemEvent" maxOccurs="unbounded" minOccurs="1">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the event that triggers the fault alert.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="key" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Unique identifier (for a given resource kind) that is used to identify
+								the fault problem event that would trigger the fault alert at runtime.
+								This is the id filled into eventId field in FaultExternalEvent.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:integer" name="faultScore" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">A score greater than 0 and less than or equal to 100 that signifies the criticality or Impact of the fault.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="ClearEvent" maxOccurs="unbounded" minOccurs="1">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the event that clears the fault alert.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="key" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Unique identifier (for a given resource kind) that is used to identify
+								the fault clear event that would clear the fault alert at runtime.
+								This is the id filled into eventId field in FaultExternalEvent.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attributeGroup ref="describe:OptionalNameKeyGroup" />
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="key" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Unique identifier for a fault (for a given resource kind) , recommended to be name spaced.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="resourceKind" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The resource kind for which the fault is applicable. The combination of resource kind
+					and the key needs to be unique</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="autoGenerateAlertDefs" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true the describe process will automatically generate Symptoms
+					and alerts for the fault. Default is false.
+					Set this to true for faults that you want the alerts on/affect badge.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="adapterComputed" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.
+					This was added for one specific fault of ours that needed to be special cased.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="perDevice" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For VMware internal use only.
+					Used to indicate fault has devices. For example, network faults on a host
+					have NICs as devices because NICs are not first class objects, yet we
+					want to track them in a fault. This means the 'devices' map in the
+					FaultExternalEvent shuold be populated for both alert and clear
+					events (the key in the map is unique device IDs and value is description for device).</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+	</xs:complexType>
+	<xs:complexType name="BasePolicyAnalysisSettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Collection of Policy declarations. Declares all policies supported by given adapter.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PolicySettings" type="describe:PolicySettingsType" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="OOTBPoliciesType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Collection of OOTB (out of the box) Policy declarations. Declares all OOTB policies supported by given adapter.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Policy" type="describe:OOTBPolicyType" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute type="xs:integer" name="vendorNameKey" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Localized name id for the Vendor of OOTB Policies.
+					The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="OOTBPolicyType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">An OOTB Policy can be assigned to a Custom Group and become an Active Policy.
+				An OOTB Policy can include zero or more Policy Settings each for a specific Adapter Kind and Resource Kind.
+				An OOTB Policy can include at most one Package Settings.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="PolicySettings" type="describe:PolicySettingsType" maxOccurs="unbounded" minOccurs="0" />
+			<xs:element name="PackageSettings" type="describe:PackageSettingsType" maxOccurs="1" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="key" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the OOTB policy.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="parentPolicy" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the OOTB policy that this policy inherits. If no parent policy is specified then
+					Base Settings is inherited.
+					Note: Only define settings that are different from policy settings of the Adapter Kind and Resource Kind that
+					are already part of parent policy settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+	</xs:complexType>
+	<xs:complexType name="PolicySettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Includes all the customized Analysis Settings for BasePolicy or an OOTB Policy.
+				Each Policy can include multiple Policy Settings each for a specific Adapter Kind and Resource Kind.
+				Note that there is no settings for "Anomaly" and "Fault" except for Badge Scores.</xs:documentation>
+		</xs:annotation>
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:sequence>
+				<xs:element name="StressedSettings" type="describe:StressedSettingsType" maxOccurs="1" minOccurs="0" />
+				<xs:element name="UsableCapacitySettings" type="describe:UsableCapacitySettingsType" maxOccurs="1" minOccurs="0" />
+				<xs:element name="WorkloadSettings" type="describe:WorkloadSettingsType" maxOccurs="1" minOccurs="0" />
+				<xs:element name="CapacityTimeRemainingSettings" type="describe:CapacityTimeRemainingSettingsType" maxOccurs="1" minOccurs="0" />
+				<xs:element name="TimeSettings" type="describe:TimeSettingsType" maxOccurs="1" minOccurs="0" />
+				<xs:element name="ReclaimableCapacitySettings" type="describe:ReclaimableCapacitySettingsType" maxOccurs="1" minOccurs="0" />
+				<xs:element name="DensitySettings" type="describe:DensitySettingsType" maxOccurs="1" minOccurs="0" />
+			</xs:sequence>
+			<xs:element name="BadgeSymptoms" type="describe:BadgeSymptomsType" maxOccurs="1" minOccurs="0" />
+			<xs:element name="Symptoms" type="describe:SymptomsType" maxOccurs="1" minOccurs="0" />
+			<xs:element name="Alerts" type="describe:AlertsType" maxOccurs="1" minOccurs="0" />
+			<xs:element name="Metrics" type="describe:MetricsType" maxOccurs="1" minOccurs="0" />
+		</xs:choice>
+		<xs:attribute type="xs:string" name="key" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key for this policy setting definition which can be referred by other policy settings within the same OOTB policy</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="adapterKind" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Adapter Kind key for which current policy settings is applicable.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="resourceKind" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Resource Kind key for which policy current settings is applicable.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="StressedSettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Defines how Stress is calculated.
+				Stress is a measurement of the workload on a resource object over time.
+				The Stress Score is the % of the stress zone area with stress in selected time sample.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:double" name="stressedPercentThreshold" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">not used anymore.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="logicOperator" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The logical operator used among container resources to determine if the Resource is stressed.
+					Supported values: OR, AND</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="OR" />
+					<xs:enumeration value="AND" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ApplicableResourceContainerType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Resource Container that is used for calculation of an Analysis Setting.
+				A Resource Container is an entity that its value plays a role in definition of Capacity models.
+				Examples are diskspace, cpu, memory, etc.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute type="xs:string" name="resourceContainerKey" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The key of the ResourceContainer defined in CapacityDefinition Describe.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="subResourceContainerKey" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The key of the subResourceContainer defined for the ResourceContainer in CapacityDefinition Describe.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="modelKey" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The model of the ResourceContainer in CapacityDefinition Describe.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="kind" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">For over-commit policy setting kind.
+					Supported values: PERCENT for percentage, RATIO for ratio.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="enabled" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If the container is enabled in UI.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="hidden" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If the container is hidden in UI.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:double" name="threshold" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The meaning of the threshold attributes depends on the Analysis Setting that the
+					resource container is defined for. For example if it is used for Stress Settings the value
+					of the threshold (a percentage value of the capacity of container resource) determines the value that
+					above which the container resource is considered to be stressed.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="slaEntireRange" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">A parameter of Sliding Analysis Window.
+					If set to true the calculation is based on the entire time range defined in 'Time' section element of policy.
+					If set to false then the time duration is in effect and the calculation would repeat every so many time.
+					Default is true.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:integer" name="slaDuration" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">A parameter of Sliding Analysis Window.
+					If slaEntireRange is false then this is the time in minutes for calculation to repeat.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="UsableCapacitySettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Defines how Usable Capacity is calculated.
+				Usable capacity is a measurement of the percentage of capacity available,
+				minus the capacity affected by High Availabilty, overcommit values, and capacity buffers.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="CapacityBuffer" maxOccurs="unbounded" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the percentage of reserved capacity of a resource container for a Resource.</xs:documentation>
+					</xs:annotation>
+					<xs:sequence>
+						<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="OverCommit" maxOccurs="unbounded" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines the percentage of capacity overcommit of a resource container for a Resource.</xs:documentation>
+					</xs:annotation>
+					<xs:sequence>
+						<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="useHA" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true Usable Capacity calculation is based on High Availability Configuration.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="capacityCalculationRule" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The basis for Capacity calculation.
+					Supported values are: Current (LAST_KNOWN), Trend (CAPACITY_TREND)
+					Default value is Current (LAST_KNOWN)</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="LAST_KNOWN" />
+					<xs:enumeration value="CAPACITY_TREND" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="WorkloadSettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Defines how Workload is calculated.
+				Workload is the immediate % of capacity consumed of the most constrained of several key resource containers.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="CapacityTimeRemainingSettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Defines how Capacity Remaining and Time Remaining are calculated.
+				Capacity is a measurement of the amount of memory, CPU, and disk space for a Resource.
+				Time remaining is a measure of the amount of time left before a Resource objects run out of capacity.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="capacityDetermination" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Whether capacity is based on total or usable capacity.
+					Supported values: Total capacity (TOTAL), Usable capacity (USABLE).</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="TOTAL" />
+					<xs:enumeration value="USABLE" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute type="xs:double" name="provisioningTimeThreshold" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Shortens Time Remaining scores (in days) to allow time for approvals, ordering, shipping,
+					configuration and deployment of resources.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="useStress" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true Stress would be considered in the capacity and time remaining calculations.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="includeCommittedProjects" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true all committed projects would be accounted which
+					would affect time remaining scores.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="TimeSettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Defines when and how the resource usage is tracked.
+				Time indicates the schedule and range of days and hours that the usage of resources is tracked,
+				and the maintenance schedule selected for periodic and repeatable maintenance.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="allHoursAndDays" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If set to true the usage is tracked at all times.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="sun" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If allHoursAndDays=false and "sun" is set to true the usage is tracked at Sundays.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="mon" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If allHoursAndDays=false and "mon" is set to true the usage is tracked at Mondays.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="tue" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If allHoursAndDays=false and "tue" is set to true the usage is tracked at Tuesdays.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="wed" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If allHoursAndDays=false and "wed" is set to true the usage is tracked at Wednesdays.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="thu" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If allHoursAndDays=false and "thu" is set to true the usage is tracked at Thursdays.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="fri" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If allHoursAndDays=false and "fri" is set to true the usage is tracked at Fridays.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:boolean" name="sat" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If allHoursAndDays=false and "sat" is set to true the usage is tracked at Saturdays.
+					Default is false.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="startHour" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If allHoursAndDays=false this would be the starting hour to track usage.
+					Supported values: An integer number from 0 to 23</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:token">
+					<xs:pattern value="[0-9]|1[0-9]|2[0-3]" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute name="endHour" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">If allHoursAndDays=false this would be the ending hour to track usage.
+					Supported values: An integer number from 0 to 23</xs:documentation>
+			</xs:annotation>
+			<xs:simpleType>
+				<xs:restriction base="xs:token">
+					<xs:pattern value="[0-9]|1[0-9]|2[0-3]" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		<xs:attribute type="xs:integer" name="dataRange" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The number of days to include in the analysis of time usage.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ReclaimableCapacitySettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Defines how the Reclaimable Capacity is calculated.
+				Reclaimable Capacity is a measurement of capacity for a container i.e. CPU, memory, and disk space designated as waste
+				idle, powered off, underused and unused.</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element name="WasteSettings" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines how the Waste part of Reclaimable Capacity is calculated.</xs:documentation>
+					</xs:annotation>
+					<xs:sequence>
+						<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+					</xs:sequence>
+					<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="IdleSettings" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines how the Idle part of Reclaimable Capacity is calculated.</xs:documentation>
+					</xs:annotation>
+					<xs:sequence>
+						<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+					</xs:sequence>
+					<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:double" name="filterThreshold" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Threshold of percent to flag a container as Idle when at least this percent of time the
+								resource container value is below Idle level.
+								Note that the Idle level is set in ApplicableResourceContainer "threshold" attribute.
+								For example if Disk IOPS is the resource container value and
+								the "filterThreshold" is set to 90 and the ApplicableResourceContainer "threshold" is
+								set to 1.0 IOPS, then the Resource would be considered as Idle if more than 90% of time
+								the Disk Space IOPS is less than 1.0.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:string" name="logicOperator" use="optional" />
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="PoweredOffSettings" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines how the Powered Off part of Reclaimable Capacity is calculated.</xs:documentation>
+					</xs:annotation>
+					<xs:sequence>
+						<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+					</xs:sequence>
+					<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:double" name="filterThreshold" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Threshold of percent to flag a container as Powered Off when at least this percent of time the
+								Resource is Powered Off.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="UnderusedSettings" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines how the Underused part of Reclaimable Capacity is calculated.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:double" name="recommendedSizePercentThreshold" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The threshold of percent of recommmended size compared to current size for a Resource.
+								If the percentage rate of recommended size to current size is less than this value then the Resource
+								is considered as Underused or Oversized.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:double" name="underusedPercentThreshold" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">Not used. Percentage of time for the resource to be considered underutilized.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:string" name="logicOperator" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">This attribute is not used.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="UnUsedSettings" maxOccurs="1" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Defines how the Unused part of Reclaimable Capacity is calculated.
+							A Resource is considered Unused if it is older than number of days set in
+							the value of ApplicableResourceContainer "threshold" attribute for a resource container.</xs:documentation>
+					</xs:annotation>
+					<xs:sequence>
+						<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+					</xs:sequence>
+					<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:all>
+		<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="DensitySettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Defines how the Density is calculated.
+				The calculation uses demand analytics to determine an optimal child:parent consolidation ratio.
+				Density is % alignment of your actual consolidation ratio to optimal.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="ApplicableResourceContainer" type="describe:ApplicableResourceContainerType" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="inheritPolicySettings" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The unique key of the policy (if any) that this policy inherits the settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="PackageSettingsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Includes all the customized Attributes and Alert/Symptom definitions for this OOTB Policy.
+				An OOTB Policy can be assigned to a Custom Group and become an Active Policy.
+				Note that there is no settings for "Anomaly" and "Fault" except for Badge Scores.
+				Each Policy can include at most one Package Settings.</xs:documentation>
+		</xs:annotation>
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:element name="BadgeSymptoms" type="describe:BadgeSymptomsType" maxOccurs="1" minOccurs="0" />
+			<xs:element name="Symptoms" type="describe:SymptomsType" maxOccurs="1" minOccurs="0" />
+			<xs:element name="Alerts" type="describe:AlertsType" maxOccurs="1" minOccurs="0" />
+			<xs:element name="Metrics" type="describe:MetricsType" maxOccurs="1" minOccurs="0" />
+		</xs:choice>
+	</xs:complexType>
+	<xs:complexType name="BadgeSymptomsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A Collection of BadgeSymptom policy package settings.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="BadgeSymptom" maxOccurs="unbounded" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">A BadgeSymptom defines a Badge Score Symptom Threshold.
+							The thresholds and severity are used for coloring of badges and Alerting on badges.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="id" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The unique id of the badge.
+								For example "badge|workload" refers to Workload badge.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:boolean" name="enabled" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If set to true the badge score symption is enabled and modifyable from UI.
+								Default is false.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="severity" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The severity of the Badge Symptom.
+								Supported values: info, warning, immediate and critical.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="warning" />
+								<xs:enumeration value="immediate" />
+								<xs:enumeration value="critical" />
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:attribute>
+					<xs:attribute type="xs:double" name="threshold" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The threshold value for each severity level.
+								When the badge value crosses the threshold value (sometimes above and sometimes under),
+								then the badge color would turn to match the severity level (yellow for warning,
+								orange for immediate and red for critical) and a Symptom with matching severity would
+								be generated.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="adapterKind" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Adapter Kind key for this collection of Badge Symptoms settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="resourceKind" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Resource Kind key for this collection of Badge Symptoms settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="SymptomsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A collection of Symptoms definition policy package settings for an OOTB policy.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Symptom" maxOccurs="unbounded" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">The Symptom definition policy package settings.
+							Note that this element is to modify an already defined Symptom for a specific OOTB Policy.
+							Modifications includes enable/disbale of Symptom or change of threshold value.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="id" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The unique id of the defined symptom definition that this Sympton policy package setting refers to.
+								This is built based on the key of an exiting defined Symptom in Describe
+								using the following convention:
+								"SymptomDefinition-" + Adapter Kind key of the Describe + "-" + Symptom key.
+								For example if Adapter Kind key is "StorageAdapter and "Symptom key is "storageHighUsage" then
+								the id for a Symptom would be: "SymptomDefinition-StorageAdapter-storageHighUsage"</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:boolean" name="enabled" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If set to true the symptom policy package settings is enabled and if set to false it is disabled.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:double" name="threshold" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The threshold value to override the original threshold value of the Symtpom.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="adapterKind" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Adapter Kind key for this collection of Symptoms settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="resourceKind" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Resource Kind key for this collection of Symptoms settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="AlertsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A collection of Alerts definition policy package settings for an OOTB policy.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Alert" maxOccurs="unbounded" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">The Alert definition policy package settings.
+							Note that this element is to modify an already defined Alert for a specific OOTB Policy.
+							Modifications only includes enable/disbale of Alert.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="id" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The unique id of the defined alert that this Alert refers to.
+								This is built based on the key of an exiting defined Alert in Describe
+								using the following convention:
+								"AlertDefinition-" + Adapter Kind key of the Describe + "-" + Alert key.
+								For example if Adapter Kind key is "StorageAdapter and "Alert key is "VolumeOnlyHighUsage" then
+								the id for an Alert would be: "AlertDefinition-StorageAdapter-VolumeOnlyHighUsage"</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:boolean" name="enabled" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If set to true the Alert is enabled and if set to false it is disabled.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="adapterKind" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Adapter Kind key for this collection of Alerts settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="resourceKind" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Resource Kind key for this collection of Alerts settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="MetricsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A collection of Metrics definition policy package settings for an OOTB policy.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Metric" maxOccurs="unbounded" minOccurs="0">
+				<xs:complexType>
+					<xs:annotation>
+						<xs:documentation xml:lang="en">The Metric definition policy package settings.
+							Note that this element is to modify an already defined Metric (ResourceAttribute)
+							for a specific OOTB Policy.
+							Modifications only includes enable/disable the Metric.
+							If enabled, data is collected for the Metric and if disabled,
+							no data would be collected for the Metric.</xs:documentation>
+					</xs:annotation>
+					<xs:attribute type="xs:string" name="id" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">The unique id of the defined metric (ResourceAttribute) that this Metric refers to.
+								This is built using the "|" as delimiter between ResourceGroup key and ResourceAttribute key.
+								For example if the ResourceGroup key is "Volume" and the ResourceAttribute key is "RawGB"
+								then the Metric id would be "Volume|RawGB"</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:boolean" name="enabled" use="required">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If set to true the data would be collected for this Metric and if set to false
+								no data would be collected for this Metric.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute type="xs:boolean" name="kpiEnabled" use="optional">
+						<xs:annotation>
+							<xs:documentation xml:lang="en">If set to true the metric is set as KPI metric
+								Default is false.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="adapterKind" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Adapter Kind key for this collection of Metric settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:string" name="resourceKind" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">The Resource Kind key for this collection of Metric settings.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="UnitDefinitionsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">A Collection of UnitType elements.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="UnitType" type="describe:UnitTypeType" maxOccurs="unbounded" minOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="UnitTypeType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Each UnitType defines a new type of unit of measurement.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Unit" type="describe:UnitType" maxOccurs="unbounded" minOccurs="1" />
+		</xs:sequence>
+		<xs:attribute name="key" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Unit type key. A unique string that identifies the type of unit of measurement.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="UnitType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Each Unit defines a new unit of measurement.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="key" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Unit key. A unique string that identifies the unit of measurement.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:OptionalNameKeyGroup" />
+		<xs:attribute type="xs:integer" name="order" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the order of the unit of measurement relative to the other units in the same type.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute type="xs:integer" name="conversionFactor" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Defines the factor to convert the unit of measurement from the unit of lower order in the same type.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="FavoriteGroupsType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Collection of FavoriteGroup elements.</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="FavoriteGroup" type="describe:FavoriteGroupType" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="FavoriteGroupType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">Defines FavoriteGroup element.</xs:documentation>
+		</xs:annotation>
+		<xs:attribute name="key" type="xs:string" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">FavoriteGroup key. A unique string that identifies the FavoriteGroup.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attributeGroup ref="describe:RequiredNameKeyGroup" />
+	</xs:complexType>
+	<xs:attributeGroup name="RequiredNameKeyGroup">
+		<xs:attribute name="nameKey" type="xs:integer" use="required">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Localized name id for the adapter.
+					The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="OptionalNameKeyGroup">
+		<xs:attribute name="nameKey" type="xs:integer" use="optional">
+			<xs:annotation>
+				<xs:documentation xml:lang="en">Localized name id for the adapter.
+					The numeric value must exist as an entry in a localized resources.properties file for the adapter.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:attributeGroup>
+</xs:schema>
